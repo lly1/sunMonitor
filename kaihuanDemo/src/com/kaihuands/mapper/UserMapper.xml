@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kaihuands.mapper.UserMapper">
+<!-- 管理员用户mapper -->
+   <resultMap type="com.kaihuands.po.User" id="UserResult">
+     <id column="a_id" property="id" jdbcType="INTEGER"/>
+     <result column="username" property="username" jdbcType="VARCHAR"/>
+     <result column="region_id" property="region_id" jdbcType="INTEGER"/>
+     <result column="passwd" property="passwd" jdbcType="VARCHAR"/>
+     <result column="name" property="name" jdbcType="VARCHAR"/>
+     <result column="address" property="address" jdbcType="VARCHAR"/>
+     <result column="userDTU" property="userDTU" jdbcType="INTEGER"/>
+     <result column="Grid" property="Grid" jdbcType="INTEGER"/>
+     </resultMap>
+   <resultMap type="com.kaihuands.po.User" id="userGroupMap" extends="UserResult">
+	   <collection property="region" ofType="com.kaihuands.po.Region" javaType="com.kaihuands.po.Region">
+	       <id column="b_id" property="id" jdbcType="INTEGER"/>
+	       <result column="regionName" property="regionName" jdbcType="VARCHAR"/>
+	   </collection>
+	   
+	   <collection property="role" ofType="com.kaihuands.po.Role">
+	       <id column="d_id" property="id" jdbcType="INTEGER"/>
+	       <result column="roleName" property="roleName" jdbcType="VARCHAR"/>
+	       
+	       <collection property="permission" ofType="com.kaihuands.po.Permission">
+		   <id column="f_id" property="id" jdbcType="INTEGER"/>
+		   <result column="pName" property="pName" jdbcType="VARCHAR"/>
+	   	   </collection>
+	   	   
+	   </collection>
+	     
+	   
+   </resultMap>
+   <select id="findup" parameterType="String" resultMap="UserResult">
+      select username,
+             name,
+             passwd
+             from sys_user
+             where
+             username=#{_parameter}
+           
+   </select>
+   
+   <select id="check" parameterType="String" resultType="String">
+      select passwd
+             from sys_user
+             where
+             username=#{_parameter}
+           
+   </select>
+   <!-- 查询所有用户角色id -->
+   <select id="findRole" resultType="com.kaihuands.po.Role">
+   select * from sys_role
+   </select>
+   
+   <select id="findUser" resultMap="userGroupMap" parameterType="com.kaihuands.po.UserVo"><!-- 查所有用户 -->
+   select a.id a_id,b.id b_id,c.id c_id,d.id d_id,
+      e.id e_id,f.id f_id,
+       username,passwd,name,address,userDTU,Grid,
+      regionName,
+      roleName,
+      pName
+      from (select * from sys_user limit #{start},#{end}) a
+      left join sys_region b on a.region_id=b.id
+      left join sys_user_role c on a.id=c.user_id
+      left join sys_role d on c.role_id=d.id
+      left join sys_role_permission e on d.id=e.role_id
+      left join sys_permission f on e.permission_id=f.id
+
+      <where>
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       a.name like '%${key}%'
+      </if>
+      and (e.role_id=1 or e.role_id=2)
+      </where>
+   </select>
+   <select id="count" resultType="int" parameterType="com.kaihuands.po.UserVo"><!-- 查所有管理操作用户 -->
+      SELECT COUNT(*) FROM sys_user a,sys_user_role b
+
+       
+      <where>
+      a.`id`=b.`user_id` AND (b.`role_id`=1 OR b.`role_id`=2)
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       name like '%${key}%'
+      </if>
+      </where>
+   </select>
+   
+   <select id="findByIdUser"  parameterType="java.lang.Integer" resultMap="userGroupMap"><!-- 根据id查用户 -->
+      select a.id a_id,b.id b_id,c.id c_id,d.id d_id,
+      e.id e_id,f.id f_id,
+      region_id,
+       username,passwd,name,address,userDTU,Grid,
+      regionName,
+      roleName,
+       pName
+      from sys_user a 
+      left join sys_region b on a.region_id=b.id
+      left join sys_user_role c on a.id=c.user_id
+      left join sys_role d on c.role_id=d.id
+      left join sys_role_permission e on d.id=e.role_id
+      left join sys_permission f on e.permission_id=f.id
+       <where>
+       a.id=#{_parameter}
+      </where>
+   </select>
+   
+   <select id="findByUnameUser"  parameterType="java.lang.String" resultMap="userGroupMap"><!-- 根据账号查用户 -->
+      select a.id a_id,b.id b_id,c.id c_id,d.id d_id,
+      e.id e_id,f.id f_id,
+      region_id,
+       username,passwd,name,address,userDTU,Grid,
+      regionName,
+      roleName,
+       pName
+      from sys_user a 
+      left join sys_region b on a.region_id=b.id
+      left join sys_user_role c on a.id=c.user_id
+      left join sys_role d on c.role_id=d.id
+      left join sys_role_permission e on d.id=e.role_id
+      left join sys_permission f on e.permission_id=f.id
+       <where>
+       username=#{_parameter}
+      </where>
+   </select>
+   
+   <insert id="addUser" parameterType="com.kaihuands.po.User" useGeneratedKeys="true" keyProperty="id"><!-- 返回自增id -->
+   <!-- 插入用户表 -->
+   	  insert into sys_user(region_id,username,passwd,name,address,userDTU,Grid) values(#{region_id},#{username},#{passwd},#{name},#{address},#{userDTU},#{grid})
+   </insert>
+   <insert id="addUserRole" parameterType="com.kaihuands.po.UserRole">
+   	<!-- 插入用户角色表 -->
+   	  insert into sys_user_role(user_id,role_id)values(#{id},#{role_id})
+   </insert>
+   
+   <delete id="deleteUser" parameterType="java.lang.Integer">
+    delete from sys_user where id=#{_parameter}
+   </delete>
+   <delete id="deleteUserRole" parameterType="java.lang.Integer">
+    delete from sys_user_role where user_id=#{_parameter}
+   </delete>
+   
+   <update id="updatePasswd" parameterType="java.lang.Integer"><!-- 重置密码 -->
+   	update sys_user set passwd="123456" where id=#{_parameter}
+   </update>
+   
+   <update id="updateUser" parameterType="com.kaihuands.po.User"><!-- 编辑操作 -->
+     update sys_user 
+     <set>
+     <if test="region_id!=null">
+      region_id=#{region_id},
+     </if>
+     <if test="username!=null">
+      username=#{username},
+     </if>
+     <if test="passwd!=null">
+     passwd=#{passwd},
+     </if>
+     <if test="name!=null">
+      name=#{name},
+     </if>
+     <if test="address!=null">
+      address=#{address},
+     </if>
+    <if test="userDTU!=null">
+      userDTU=#{userDTU},
+     </if>
+     <if test="grid!=null">
+      grid=#{grid}
+     </if>
+     
+     </set>
+      where id=#{id} 
+     </update>
+     <update id="updateUserRole" parameterType="com.kaihuands.po.UserRole">
+     	update sys_user_role set role_id =#{role_id} where user_id=#{user_id}
+     </update>
+     
+     
+     
+     <!-- 光伏用户mapper -->
+   <resultMap type="com.kaihuands.po.User" id="userSunMap" extends="UserResult">
+	
+	   <collection property="role" ofType="com.kaihuands.po.Role">
+	       <id column="b_id" property="id" jdbcType="INTEGER"/>
+	   </collection>
+	     
+	   
+   </resultMap>
+   <select id="findSunUser" resultMap="userSunMap" parameterType="com.kaihuands.po.UserVo"><!-- 查所有用户 -->
+  	  SELECT a.id a_id,b.id b_id,username,name,userDTU,grid FROM sys_user a,sys_user_role b  
+      <where>
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       a.name like '%${key}%'
+      </if>
+      a.id=b.user_id AND role_id=3
+      </where>
+      LIMIT #{start},#{end}
+   </select>
+   <select id="sunCount" resultType="int" parameterType="com.kaihuands.po.UserVo"><!-- 查所有管理操作用户 -->
+      SELECT COUNT(*) FROM sys_user a,sys_user_role b
+
+       
+      <where>
+      a.`id`=b.`user_id` AND b.role_id=3
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       name like '%${key}%'
+      </if>
+      </where>
+   </select>
+   <!-- 地区操作 -->
+    <!-- 查询所有地区 -->
+   <select id="findregion" resultType="com.kaihuands.po.Region">
+   select * from sys_region
+   </select>
+   <select id="findAllregion" resultType="com.kaihuands.po.Region" parameterType="com.kaihuands.po.UserVo">
+   select * from sys_region
+    <where>
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       regionName like '%${key}%'
+      </if>
+      </where>
+      <if test="end!=null">
+         limit #{start},#{end}
+      </if>
+   </select>
+   <!-- 查询地区总条数 -->
+    <select id="regionCount" resultType="java.lang.Integer" parameterType="com.kaihuands.po.UserVo">
+    select count(*) from sys_region
+    <where>
+      <if test="key!=null and !&quot;&quot;.equals(key.trim())"> 
+       regionName like '%${key}%'
+      </if>
+      </where>
+    </select>
+    <!-- 添加地区 -->
+    <insert id="addRegion" parameterType="com.kaihuands.po.Region">
+    insert into sys_region values(null,#{regionName},#{regionDTU})
+    </insert>
+    <!-- 根据id查询地区 -->
+    <select id="findByIdRegion"  parameterType="java.lang.Integer" resultType="com.kaihuands.po.Region"><!-- 根据id查用户 -->
+    select * from sys_region 
+    <where>
+      id=#{_parameter}
+    </where>
+    </select>
+    <!-- 修改地区 -->
+    <update id="updateRegion">
+    update sys_region 
+    <set>
+     <if test="regionName!=null">
+     regionName=#{regionName},
+     </if>
+     <if test="regionDTU!=null">
+     regionDTU=#{regionDTU},
+     </if>
+     </set>
+     <where>
+     id=#{id}
+     </where>
+    </update>
+ </mapper>

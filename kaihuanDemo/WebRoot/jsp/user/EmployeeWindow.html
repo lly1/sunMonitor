@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>员工面板</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+    <script src="../../js/boot.js" type="text/javascript"></script>
+    
+
+    <style type="text/css">
+    html, body
+    {
+        font-size:12px;
+        padding:0;
+        margin:0;
+        border:0;
+        height:100%;
+        overflow:hidden;
+    }
+    .errorText
+    {
+        color:red;
+    }
+    
+    	.style6
+        {
+            color: red;
+            width: 72px;
+            height: 6px;
+        }
+        .style8
+        {
+            color: #eee;
+        }
+    
+    </style>
+</head>
+<body>    
+     
+    <form id="form1" method="post">
+        <div style="padding-left:11px;padding-bottom:5px;">
+            <table style="table-layout:fixed;">
+            	<input type="hidden" class="mini-textbox" id="id" name="id">
+                <tr>
+                    <td style="width:70px;">用户名：</td>
+                    <td style="width:150px;">    
+                     	<input id="username" name="username" class="mini-textbox" required="true" onvalidation="CheckUserID"/>
+                    </td>
+               	</tr>
+                <tr>
+                    <td >密码：</td>
+                    <td >    
+                        <input id="passwd" name="passwd" class="mini-textbox" required="true" vtype="minLength:6" emptyText="请输入至少6位密码" minLengthErrorText="密码不能少于6个字符"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td >姓名：</td>
+                    <td >    
+                        <input id="name" name="name" class="mini-textbox" required="true"/>
+                    </td>
+                </tr>
+                <tr>
+                
+                    <td style="width:70px;">区域：</td>
+                    <td style="width:150px;">    
+                        <input id="region_id" name="region_id" class="mini-combobox" style="width:150px;" textField="regionName"  valueField="id" emptyText="请选择..."
+    					url="../../user/findregionId.action"   required="true"  />         
+                    </td>
+                </tr>
+                <tr>
+                    <td >用户地址：</td>
+                    <td >    
+                        <input id="address" name="address" class="mini-textbox" required="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <td >用户DTU：</td>
+                    <td >    
+                        <input id="userDTU" name="userDTU" class="mini-textbox" />
+                    </td>
+                </tr>    
+                <tr>
+                    <td >是否并网：</td>
+                    <td >    
+                   		<input id="grid" name="grid" class="mini-combobox" tetxField="text" valueField="id" allowinput="false" value="0" data="grids"/>
+                    </td>
+                </tr>
+                <tr>
+                	<td style="width:70px;">用户角色：</td>
+                    <td style="width:150px;">    
+                      
+					<input id="role_id" name="role[0].id" class="mini-combobox" tetxField="text" valueField="id" allowinput="false" data="role" emptyText="请选择..."/>
+                    </td>
+                </tr>  
+                </tr>  
+                
+                 <tr>
+                    <td class="style8">结果</td>
+                    <td id="id_error" class="style6"></td> 
+                </tr>         
+            </table>
+        </div>
+        <div style="text-align:center;padding:10px;margin-top:10px;">               
+            <a id="add" class="mini-button" onclick="onOk" style="width:60px;margin-right:10px;">确定</a>
+            <a id="edit" class="mini-button" onclick="onOk1" style="width:60px;margin-right:10px;">确定</a>       
+            <a class="mini-button" onclick="onCancel" style="width:60px;">取消</a>       
+        </div>        
+    </form>
+    <script type="text/javascript">
+        var role = [{ id: 1, text: "管理员" }, { id: 2, text: "操作员"},{id: 3, text: "用户"}];
+        var grids =[{id: 0,text:"否"},{id: 1,text:"是"}];
+        mini.parse();
+		mini.get("grid").setValue(1);
+        var form = new mini.Form("form1");
+		
+        function CheckUserID(e) {
+            if (e.isValid) {
+                var username = mini.get("username").getValue();
+                $.ajax(
+                {
+                    url: "../../check.action",
+                    type: 'post',
+                    dataType:'json',
+                    async: false, //同步
+                    data: { username: username },
+                    //cache: false,
+                    success: function (text) {
+                        if (text !=null) {
+                           
+                        	e.isValid = false;
+                        	e.errorText = "请填写正确的账号";
+                            $("#id_error").text("该账号已注册过");
+                        }
+                     },
+                     error: function (){
+                        	e.isValid = true;
+                        	$("#id_error").text("");
+                        }
+                    
+                });
+            }
+        }
+
+        function CheckUserPower(e) {
+            if (e.isValid) {
+                var power = mini.get("User_Power").getValue();
+                if (power != 1) {
+                    mini.get("Meter_Power").setValue(1);
+                    mini.get("Light_Power").setValue(1);
+                }
+                else {
+                    mini.get("Meter_Power").setValue(0);
+                    mini.get("Light_Power").setValue(0);
+                }
+            }
+        }
+
+        function CheckUPower(e) {
+                var power = mini.get("User_Power").getValue();
+                if (power != 1) {
+                    mini.get("Meter_Power").setValue(1);
+                    mini.get("Light_Power").setValue(1);
+                }
+        }
+
+        function SaveData() {//添加
+            var role_id = mini.get("role_id").getValue();
+            $.ajax({
+                url: "../../user/addUser.action?role_id="+role_id,
+                type: 'post',
+                data: $('#form1').serialize(),
+                cache: false,
+                success: function (text) {
+                    if (text == "ok") {
+                        alert("增加成功！");
+                        CloseWindow();
+                    }
+                },
+                error: function () {
+                    alert("增加失败！");
+                }
+            });
+        }
+        function SaveData1() {//修改
+        var role_id = mini.get("role_id").getValue();
+            $.ajax({
+                url: "../../user/updateUser.action?r_id="+role_id,
+                type: 'post',
+                data: $('#form1').serialize(),
+                cache: false,
+                success: function (text) {
+                    if (text !=null) {
+                        alert("修改成功！");
+                    }
+                    else{
+                        alert("修改失败！");
+                    }
+                    CloseWindow("save");
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                    CloseWindow();
+                }
+            });
+        }
+        
+        ////////////////////
+        //标准方法接口定义
+        function SetData(data) {
+        	$("#id").hide();
+            if (data.action == "edit") {
+                //跨页面传递的数据对象，克隆后才可以安全使用
+                $("#add").hide();
+                data = mini.clone(data);
+                $.ajax({
+                    url: "../../user/findUserById.action?id=" + data.id,
+                    cache: false,
+                    success: function (text) {
+                        var o = mini.decode(text);
+                        form.setData(o);
+                        form.setChanged(false);
+                    }
+                });
+            }
+            else {
+           		$("#edit").hide();
+            	$("#id").remove();
+                action = "add";
+                
+            }
+        }
+
+        function GetData() {
+            var o = form.getData();
+            return o;
+        }
+        function CloseWindow(action) {
+            if (action == "close" && form.isChanged()) {
+                if (confirm("数据被修改了，是否先保存？")) {
+                    return false;
+                }
+            }
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+        function onOk(e) {
+            SaveData();
+        }
+        function onOk1(e) {
+            SaveData1();
+        }
+        function onCancel(e) {
+            CloseWindow("cancel");
+        }
+
+    </script>
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="kaihuanDemo"
+  id="myeclipse.1513865512625"
+  context-root="/kaihuanDemo"
+  j2ee-spec="5.0"
+  archive="kaihuanDemo.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

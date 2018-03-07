@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 逆变器数据的Mapper映射 -->
+<!-- 配置设备表的结果集映射 -->
+<mapper namespace="com.kaihuands.mapper.InvertMsgMapper">
+   <resultMap type="com.kaihuands.po.InvertMsg" id="InvertMsgResult">
+     <id column="id" property="id" jdbcType="INTEGER"/>
+     <result column="user_id" property="user_id" jdbcType="INTEGER"/>
+     <result column="Invert_SN" property="Invert_SN" jdbcType="VARCHAR"/>
+     <result column="Temperature" property="Temperature" jdbcType="VARCHAR"/>
+     <result column="Vpv1" property="Vpv1" jdbcType="VARCHAR"/>
+     <result column="Vpv2" property="Vpv2" jdbcType="VARCHAR"/>
+     <result column="Ipv1" property="Ipv1" jdbcType="VARCHAR"/>
+     <result column="Ipv2" property="Ipv2" jdbcType="VARCHAR"/>
+     <result column="Iac" property="Iac" jdbcType="VARCHAR"/>
+     <result column="Vac" property="Vac" jdbcType="VARCHAR"/>
+     <result column="Fac" property="Fac" jdbcType="VARCHAR"/>
+     <result column="Pac" property="Pac" jdbcType="VARCHAR"/>
+     <result column="E_total" property="E_total" jdbcType="VARCHAR"/>
+     <result column="H_total" property="H_total" jdbcType="VARCHAR"/>
+     <result column="Mode" property="Mode" jdbcType="VARCHAR"/>
+     <result column="ErrorMsg" property="ErrorMsg" jdbcType="VARCHAR"/>
+     <result column="E_today" property="E_today" jdbcType="VARCHAR"/>
+     <result column="E_todayA" property="E_todayA" jdbcType="VARCHAR"/>
+     <result column="E_todayB" property="E_todayB" jdbcType="VARCHAR"/>
+     <result column="Temperature2" property="Temperature2" jdbcType="VARCHAR"/>
+     <result column="VPN" property="VPN" jdbcType="VARCHAR"/>
+     <result column="reactivePower" property="reactivePower" jdbcType="CHAR"/>
+     <result column="PV3voltage" property="PV3voltage" jdbcType="CHAR"/>
+      <result column="PV3current" property="PV3current" jdbcType="CHAR"/>
+      <result column="PV4voltage" property="PV4voltage" jdbcType="CHAR"/>
+      <result column="PV4current" property="PV4current" jdbcType="CHAR"/>
+      <result column="Uvoltage" property="Uvoltage" jdbcType="CHAR"/>
+      <result column="Vcurrent" property="Vcurrent" jdbcType="CHAR"/>
+      <result column="BUSvoltage" property="BUSvoltage" jdbcType="CHAR"/>
+      <result column="BUScurrent" property="BUScurrent" jdbcType="CHAR"/>
+      <result column="gridFrequency" property="gridFrequency" jdbcType="CHAR"/>
+      <result column="powerFactor" property="powerFactor" jdbcType="CHAR"/>
+      <result column="inputPower" property="inputPower" jdbcType="CHAR"/>
+      <result column="outputPower" property="outputPower" jdbcType="CHAR"/>
+      <result column="temperature3" property="temperature3" jdbcType="CHAR"/>
+      <result column="groundingResistance" property="groundingResistance" jdbcType="CHAR"/>
+      <result column="leakageCurrent" property="leakageCurrent" jdbcType="CHAR"/>
+      <result column="DCcomponent" property="DCcomponent" jdbcType="CHAR"/>
+      <result column="Ucurrent" property="Ucurrent" jdbcType="CHAR"/>
+      <result column="Vvoltage" property="Vvoltage" jdbcType="CHAR"/>
+      <result column="Wvoltage" property="Wvoltage" jdbcType="CHAR"/>
+      <result column="Wcurrent" property="Wvoltage" jdbcType="CHAR"/>
+      <result column="receiveTime" property="receiveTime" jdbcType="TIMESTAMP"/>
+     <collection property="user" resultMap="com.kaihuands.mapper.UserMapper.UserResult"></collection>
+   </resultMap>
+   <resultMap id="BaseResultMap" type="com.kaihuands.po.NoinvertMsg" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="RowNumber" property="rownumber" jdbcType="VARCHAR" />
+    <result column="chargeState" property="chargestate" jdbcType="VARCHAR" />
+    <result column="batteryCap" property="batterycap" jdbcType="VARCHAR" />
+    <result column="batteryTemperature" property="batterytemperature" jdbcType="VARCHAR" />
+    <result column="chargeKWH" property="chargekwh" jdbcType="VARCHAR" />
+    <result column="ErrorMsg" property="errormsg" jdbcType="VARCHAR" />
+    <result column="disKWH" property="diskwh" jdbcType="VARCHAR" />
+    <result column="distime" property="distime" jdbcType="VARCHAR" />
+    <result column="ia" property="ia" jdbcType="VARCHAR" />
+    <result column="ib" property="ib" jdbcType="VARCHAR" />
+    <result column="itotal" property="itotal" jdbcType="VARCHAR" />
+    <result column="idis" property="idis" jdbcType="VARCHAR" />
+    <result column="E_today" property="eToday" jdbcType="VARCHAR" />
+    <result column="loadState" property="loadstate" jdbcType="VARCHAR" />
+    <result column="pc" property="pc" jdbcType="VARCHAR" />
+    <result column="pd" property="pd" jdbcType="VARCHAR" />
+    <result column="vpv" property="vpv" jdbcType="VARCHAR" />
+    <result column="receiveTime" property="receivetime" jdbcType="TIMESTAMP" />
+    <result column="vxdc" property="vxdc" jdbcType="CHAR" />
+    <result column="version" property="version" jdbcType="CHAR" />
+    <result column="temperature" property="temperature" jdbcType="CHAR" />
+    <collection property="user" resultMap="com.kaihuands.mapper.UserMapper.UserResult"></collection>
+  </resultMap>
+      <!-- 分页查询所有离网逆变器信息   全局监控 -->
+   <select id="findoff_gridInvertMsg" parameterType="com.kaihuands.po.UserVo" resultMap="BaseResultMap">
+     SELECT * FROM (SELECT *  FROM (SELECT id a_id,grid,userDTU,NAME FROM sys_user)a,dbo_noinvert_msg b  
+     <where>
+     a_id=b.user_id AND grid=0 ORDER BY receiveTime DESC)aa GROUP BY NAME
+     <if test="key!=null">
+     name like '%${key}%'
+     </if>
+     </where>
+       <if test="end!=null">
+      limit #{start},#{end}
+      </if>
+   </select>
+   
+   <!-- 查询总数 -->
+   <select id="countoff_gridInvertMsg" parameterType="com.kaihuands.po.UserVo"  resultType="java.lang.Integer">
+   select count(*) from (select id a_id,grid,userDTU,name from sys_user)a,dbo_noinvert_msg b
+     <where>
+     a_id=b.user_id and grid=0
+     <if test="key!=null">
+     name like '%${key}%'
+     </if>
+     </where>
+   </select>
+        <!-- 根据id查询离网逆变器信息   全局监控 -->
+   <select id="findoff_gridInvertMsgById" parameterType="integer" resultMap="BaseResultMap">
+     select * from (select id a_id,grid,userDTU,name from sys_user)a,dbo_noinvert_msg b
+     <where>
+     a_id=b.user_id
+     and grid=0 and userDTU=#{_parameter}
+     </where>
+     ORDER BY b.receiveTime DESC LIMIT 1
+   </select>
+       <!-- 根据时间和id查询某一时间段的数据 -->
+   <select id="findDateNIMsg" parameterType="com.kaihuands.po.DateVo" resultMap="BaseResultMap">
+     select * from dbo_noinvert_msg b ,(select id a_id,userDTU,name from sys_user where grid=0)a
+     <where>
+     a_id=b.user_id
+     and receiveTime between #{begintime} and  #{endtime}
+     and a.userDTU= #{Device_ID}
+     </where>
+     <if test="end!=null">
+      limit #{start},#{end}
+      </if>
+   </select>
+     <!-- 根据时间和id查询某一时间段的数据总数 -->
+   <select id="countDateNIMsg" parameterType="com.kaihuands.po.DateVo"  resultType="java.lang.Integer">
+  select count(*) from dbo_noinvert_msg b ,(select id a_id,userDTU,name from sys_user where grid=0)a 
+     <where>
+     a_id=b.user_id
+     and receiveTime between #{begintime} and  #{endtime}
+     and a.userDTU
+     </where>
+   </select>
+   
+   
+   
+     <!-- 分页查询所有并网逆变器信息   全局监控 -->
+   <select id="findInvertMsg" parameterType="com.kaihuands.po.UserVo" resultMap="InvertMsgResult">
+     SELECT * FROM (SELECT *  FROM (SELECT id a_id,grid,userDTU,NAME FROM sys_user)a,dbo_invert_msg b  
+     <where>
+     a_id=b.user_id AND grid=1 ORDER BY receiveTime DESC)aa GROUP BY NAME
+     <if test="key!=null">
+     name like '%${key}%'
+     </if>
+     </where>
+      <if test="end!=null">
+      limit #{start},#{end}
+      </if>
+   </select>
+          <!-- 根据id查询并网网逆变器信息   全局监控 -->
+   <select id="findgridInvertMsgById" parameterType="integer" resultMap="InvertMsgResult">
+     select * from (select id a_id,grid,userDTU,name from sys_user)a,dbo_invert_msg b
+     <where>
+     a_id=b.user_id
+     and grid=1 and userDTU=#{_parameter}
+     </where>
+     ORDER BY b.receiveTime DESC LIMIT 1
+   </select>
+   <!-- 查询总数 -->
+   <select id="countInvertMsg" parameterType="com.kaihuands.po.UserVo"  resultType="java.lang.Integer">
+   select count(*) from (select id a_id,grid,userDTU,name from sys_user)a,dbo_invert_msg b
+     <where>
+     a_id=b.user_id and grid=1
+     <if test="key!=null">
+     name like '%${key}%'
+     </if>
+     </where>
+   </select>
+   <!-- 根据时间和id查询某一时间段的数据 -->
+   <select id="findDateIMsg" parameterType="com.kaihuands.po.DateVo" resultMap="InvertMsgResult">
+     select * from dbo_invert_msg b ,(select id a_id,userDTU,name from sys_user where grid=1)a
+     <where>
+     a_id=b.user_id
+     and receiveTime between #{begintime} and  #{endtime}
+     and a.userDTU= #{Device_ID}
+     </where>
+     <if test="end!=null">
+      limit #{start},#{end}
+      </if>
+   </select>
+     <!-- 根据时间和id查询某一时间段的数据总数 -->
+   <select id="countDateIMsg" parameterType="com.kaihuands.po.DateVo"  resultType="java.lang.Integer">
+  	select count(*) from dbo_invert_msg b ,(select id a_id,userDTU,name from sys_user where grid=1)a 
+     <where>
+     a_id=b.user_id
+     and receiveTime between #{begintime} and  #{endtime}
+     and a.userDTU
+     </where>
+   </select>
+   </mapper>

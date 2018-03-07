@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>区域面板</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+    <script src="../../js/boot.js" type="text/javascript"></script>
+    
+
+    <style type="text/css">
+    html, body
+    {
+        font-size:12px;
+        padding:0;
+        margin:0;
+        border:0;
+        height:100%;
+        overflow:hidden;
+    }
+    .errorText
+    {
+        color:red;
+    }
+    
+    	.style6
+        {
+            color: red;
+            width: 72px;
+            height: 6px;
+        }
+        .style8
+        {
+            color: #eee;
+        }
+    
+    </style>
+</head>
+<body>    
+     
+    <form id="form1" method="post">
+        <div style="padding-left:11px;padding-bottom:5px;">
+            <table style="table-layout:fixed; ">
+            	<input type="hidden" class="mini-textbox" id="id" name="id">
+                <tr>
+                    <td style="width:70px;">区域名称</td>
+                    <td style="width:150px;">    
+                     	<input id="regionName" name="regionName" class="mini-textbox" required="true" />
+                    </td>
+               	</tr>
+                <tr>
+                    <td >区域DTU：</td>
+                    <td >    
+                        <input id="regionDTU" name="regionDTU" class="mini-textbox" required="true"/>
+                    </td>
+                </tr>
+               
+            </table>
+        </div>
+        <div style="text-align:center;padding:10px;margin-top:10px;">               
+            <a id="add" class="mini-button" onclick="onOk" style="width:60px;margin-right:10px;">确定</a>
+            <a id="edit" class="mini-button" onclick="onOk1" style="width:60px;margin-right:10px;">确定</a>       
+            <a class="mini-button" onclick="onCancel" style="width:60px;">取消</a>       
+        </div>        
+    </form>
+    <script type="text/javascript">
+        var form = new mini.Form("form1");
+        mini.parse();
+		function SaveData() {//添加
+            
+            $.ajax({
+                url: "../../user/addRegion.action",
+                type: 'post',
+                data: $('#form1').serialize(),
+                cache: false,
+                success: function (text) {
+                    if (text == "ok") {
+                        alert("增加成功！");
+                        CloseWindow();
+                    }
+                },
+                error: function () {
+                    alert("增加失败！");
+                }
+            });
+        }
+        function SaveData1() {//修改
+            $.ajax({
+                url: "../../user/updateRegion.action",
+                type: 'post',
+                data: $('#form1').serialize(),
+                cache: false,
+                success: function (text) {
+                    if (text == "ok") {
+                        alert("修改成功！");
+                    }
+                    else if (text == "no") {
+                        alert("修改失败！");
+                    }
+                    CloseWindow("save");
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                    CloseWindow();
+                }
+            });
+        }
+        
+        ////////////////////
+        //标准方法接口定义
+        function SetData(data) {
+        	$("#id").hide();
+            if (data.action == "edit") {
+                //跨页面传递的数据对象，克隆后才可以安全使用
+                $("#add").hide();
+                data = mini.clone(data);
+                $.ajax({
+                    url: "../../user/findRegionById.action?id=" + data.id,
+                    cache: false,
+                    success: function (text) {
+                        var o = mini.decode(text);
+                        form.setData(o);
+                        form.setChanged(false);
+                    }
+                });
+            }
+            else {
+           		$("#edit").hide();
+            	$("#id").remove();
+                action = "add";
+                
+            }
+        }
+
+        function GetData() {
+            var o = form.getData();
+            return o;
+        }
+        function CloseWindow(action) {
+            if (action == "close" && form.isChanged()) {
+                if (confirm("数据被修改了，是否先保存？")) {
+                    return false;
+                }
+            }
+            if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+            else window.close();
+        }
+        function onOk(e) {
+            SaveData();
+        }
+        function onOk1(e) {
+            SaveData1();
+        }
+        function onCancel(e) {
+            CloseWindow("cancel");
+        }
+
+    </script>
+
+   
+</body>
+</html>

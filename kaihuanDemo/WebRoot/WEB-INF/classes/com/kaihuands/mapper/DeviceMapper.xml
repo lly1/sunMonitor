@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 设备的Mapper映射文件 -->
+<!-- 配置设备表的结果集映射 -->
+<mapper namespace="com.kaihuands.mapper.DeviceMapper">
+   <resultMap type="com.kaihuands.po.Device" id="DeviceResult">
+     <id column="id" property="id" jdbcType="INTEGER"/>
+     <result column="Invert_SN " property="Invert_SN " jdbcType="TINYINT"/>
+     <result column="State" property="State" jdbcType="INTEGER"/>
+     <result column="Phone" property="Phone" jdbcType="VARCHAR"/>
+     <result column="Place" property="Place" jdbcType="VARCHAR"/>
+     <result column="PlaceTime" property="PlaceTime" jdbcType="TIMESTAMP"/>
+     <result column="Manager " property="Manager " jdbcType="VARCHAR"/>
+     <result column="isRegisted" property="isRegisted" jdbcType="TINYINT"/>
+     <result column="user_id" property="user_id" jdbcType="INTEGER"/>
+     <result column="DtuOnToOffTime" property="DtuOnToOffTime" jdbcType="TIMESTAMP"/>
+     <collection property="user" resultMap="com.kaihuands.mapper.UserMapper.UserResult"></collection>
+   </resultMap>
+   <!-- 查询所有设备 -->
+   <select id="findDevice" parameterType="com.kaihuands.po.UserVo" resultMap="DeviceResult">
+     select * from (select id a_id,userDTU,grid,name from sys_user)a,dbo_device b
+     <where>
+     a_id=b.user_id
+     <if test="key!=null">
+     and a.userDTU like '%${key}%'
+     </if>
+     </where>
+      <if test="end!=null">
+         limit #{start},#{end}
+      </if>
+   </select>
+   <!-- 查询总数 -->
+   <select id="countDevice" parameterType="com.kaihuands.po.UserVo"  resultType="java.lang.Integer">
+   select count(*) from (select id a_id,userDTU,name from sys_user)a,dbo_device b
+     <where>
+     a_id=b.user_id
+     <if test="key!=null">
+     and a.userDTU like '%${key}%'
+     </if>
+     </where>
+   </select>
+   <!-- 查询所有安装地点 -->
+   <select id="getAllPlace" parameterType="integer" resultType="com.kaihuands.po.Device">
+   	select distinct Place from dbo_device a,sys_user b where a.user_id=b.id and b.grid=#{_parameter}
+   </select>
+   <!-- 根据安装地点查id -->
+   <select id="getIdByPlace" parameterType="String" resultType="String">
+   	select userDTU from sys_user a,dbo_device b where a.id=b.user_id and a.grid=#{0}
+   	<if test='param2!=null and param2!=""'><!-- 没选时查询所有id -->
+   	and b.Place=#{1} 
+   	</if>
+   	order by userDTU	
+   </select>
+   <insert id="addUser" parameterType="com.kaihuands.po.User" useGeneratedKeys="true" keyProperty="id"><!-- 返回自增id -->
+   <!-- 插入用户表 -->
+   	  insert into sys_user(region_id,username,name,userDTU,Grid) values(1,#{username},#{name},#{userDTU},#{grid})
+   </insert>
+   <insert id="addDevice" parameterType="com.kaihuands.po.Device">
+   <!-- 插入设备表 -->
+   	  insert dbo_device
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+       Invert_SN,
+         <if test='State!= null and State!= "" '>
+             State,
+         </if>
+         <if test='Phone != null and Phone != "" '>
+             Phone,
+         </if>
+         <if test='Place != null and Place != "" '>
+             Place,
+         </if>
+         <if test='PlaceTime  != null and PlaceTime  != "" '>
+             PlaceTime,
+         </if>
+         <if test='isRegisted  != null and isRegisted  != "" '>
+             isRegisted,
+         </if>
+         <if test='Manager  != null and Manager  != "" '>
+             Manager,
+         </if>
+         <if test='user_id  != null and user_id  != "" '>
+             user_id,
+         </if>
+        </trim>
+         <trim prefix="values (" suffix=")" suffixOverrides="," >
+         #{Invert_SN},
+         <if test='State!= null and State!= "" '>
+             #{State},
+         </if>
+         <if test='Phone != null and Phone != "" '>
+             #{Phone},
+         </if>
+         <if test='Place != null and Place != "" '>
+             #{Place},
+         </if>
+         <if test='PlaceTime  != null and PlaceTime  != "" '>
+             #{PlaceTime}, 
+         </if>
+         <if test='isRegisted  != null and isRegisted  != "" '>
+             0,
+         </if>
+         <if test='Manager  != null and Manager  != "" '>
+            #{Manager}, 
+         </if>
+         <if test='user_id  != null and user_id  != "" '>
+            #{user_id},
+         </if>
+        </trim>
+   </insert>
+   <!-- 修改用户表 -->
+   <update id="upSunUser" parameterType="com.kaihuands.po.User"><!-- 编辑操作 -->
+     update sys_user 
+    <trim prefix="set" suffixOverrides=",">
+     <if test='name!= null and name!= "" '>
+      name=#{name},
+     </if>
+     <if test='grid!= null and grid!= "" '>
+      grid=#{grid}
+     </if>
+     </trim>
+      where id=#{id} 
+     </update>
+     <!-- 修改设备表 -->
+     <update id="upDevice" parameterType="com.kaihuands.po.Device">
+      update dbo_device
+      <trim prefix="set" suffixOverrides=",">
+       <if test='Invert_SN!= null and Invert_SN!= "" '>
+            Invert_SN= #{Invert_SN},
+         </if>
+      <if test='State!= null and State!= "" '>
+            State= #{State},
+         </if>
+         <if test='Phone != null and Phone != "" '>
+            Phone= #{Phone},
+         </if>
+         <if test='Place != null and Place != "" '>
+            Place= #{Place},
+         </if>
+         <if test='PlaceTime  != null and PlaceTime  != "" '>
+            PlaceTime= #{PlaceTime}, 
+         </if>
+         <if test='Manager  != null and Manager  != "" '>
+            Manager=#{Manager} 
+         </if>
+         </trim>
+         <where>
+          id=#{id}
+         </where>
+       </update>
+       <!-- 删除设备 -->
+    <delete id="rmDevice" parameterType="java.lang.Integer">
+    delete from dbo_device where id=#{_parameter}
+   </delete>
+   </mapper>
